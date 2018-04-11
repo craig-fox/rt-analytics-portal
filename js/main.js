@@ -7,10 +7,16 @@ StatsAnalytics.info = StatsAnalytics.info || {};
 //Fixed data
 StatsAnalytics.info.country = 'New Zealand';
 StatsAnalytics.info.state = 'Auckland';
-StatsAnalytics.info.region = 'Auckland';
-StatsAnalytics.info.operator = 'craigs-venue';
+StatsAnalytics.info.region = 'Northland';
+StatsAnalytics.info.operator = 'craigs-place';
 
-const tomo_id = 59775219;
+const tomo_id = 3213273;
+const basePath = 'https://s3-ap-southeast-2.amazonaws.com/rt-dashboard-images/'
+  + StatsAnalytics.info.country + '/'
+  + StatsAnalytics.info.state + '/'
+  + StatsAnalytics.info.region + '/'
+  + StatsAnalytics.info.operator + '/'
+  + tomo_id + '/';
 
 
 (function($){
@@ -36,26 +42,19 @@ const tomo_id = 59775219;
   $("#regionName").text(StatsAnalytics.info.region)
   $("#stateName").text(StatsAnalytics.info.state)
   $("#countryName").text(StatsAnalytics.info.country)
+  
+  let totalVisits = [];
+  let visitsAfterBrowse = [];
+  let profileViews = []; 
 
-  $(document).on("click", "a.dropdown-item.report", function(e){
-    const name = ($(this).attr('name')) || '';
-    const id = ($(this).attr('id')) || '';
-
-    if(name !== undefined && name != ''){
-      StatsAnalytics.info.report = name
-      StatsAnalytics.info.reportCrumb = id
-      $("#infoContainer").show()
-      $("#reportName").text(StatsAnalytics.info.report)
-      const path = StatsAnalytics.info.country 
-      + '/' + StatsAnalytics.info.state
-      + '/' + StatsAnalytics.info.region
-      + '/' + StatsAnalytics.info.operator 
-      + '/' + tomo_id + '/'
-
-      const url = _config.api.retrieveS3ViewURL + path + StatsAnalytics.info.reportCrumb + '-view.pdf';
-      $("#downloadPDF").attr('href', url);
-      requestCsv()
-    }
+  $(function() {
+    requestReports()
+    $('#poiViewPDF').attr('href', basePath + 'profileviews-view.pdf')
+    $('#poiViewCSV').attr('href', basePath + 'profileviews-view.csv')
+    $('#visitsAfterPDF').attr('href', basePath + 'visitafterbrowse-view.pdf')
+    $('#visitsAfterCSV').attr('href', basePath + 'visitafterbrowse-view.csv')
+    $('#totalVisitsPDF').attr('href', basePath + 'allvisits-view.pdf')
+    $('#totalVisitsCSV').attr('href', basePath + 'allvisits-view.csv')
   });
 
   function requestImage(name){
@@ -63,13 +62,44 @@ const tomo_id = 59775219;
     $("#img").attr('src', url)
   }
 
-  function handleCsv(result){
+  function storeCsvData(result){
     const rows = result.split("\n")
     let header = rows[0].split(",")
-    header.pop() //Remove column with nonsensical value, 0))"
-    const table = document.getElementById('dashboard-table')
+   // console.log("Header", header)
+    let data = []
+    data.push(header)
+
+    if(StatsAnalytics.info.report === 'profileviews'){
+       for(let i=1; i < rows.length; i++){
+        const preData = rows[i].split("\"")
+        const line = preData[0].replace(/,\s*$/, "") + preData[1]
+        data.push(line)
+      }
+    } else {
+      for(let i=1; i < rows.length; i++){
+          const line = rows[i]
+          data.push(line)
+      }
+    }
+
+    return new Promise(
+        function (resolve, reject) {
+            resolve(data)
+        }
+    );
+  }
+
+
+  function fillTable(tableName, rows){
+    const table = document.getElementById(tableName)
     const theader = table.createTHead()
     const row = theader.insertRow(0)
+
+    const header = rows[0].split(',')
+
+    if(tableName === 'poiviews-table'){
+       header.pop() //Remove column with nonsensical value, 0))"
+    } 
 
     for(let i=0; i < header.length; i++){
       let cell = row.insertCell(i)
@@ -77,45 +107,83 @@ const tomo_id = 59775219;
       const startRegex = /.+\[/
       if(startRegex.test(columnName)){
         columnName = columnName.replace(startRegex, '')
-        columnName = columnName.replace(/\].*/, '')
+        columnName = columnName.replace(/\]./, '')
       }
       cell.innerHTML = columnName
+    } 
+
+    if(tableName === 'poiviews-table'){
+      for(let i=1; i < rows.length; i++){
+        const row = table.insertRow(i)
+        let rowData = rows[i].split(",")
+        for(let p=0; p < rowData.length; p++){
+          let cell = row.insertCell(p)
+          cell.innerHTML = rowData[p]
+        } 
+      }
+
+    } else {
+      for(let i=1; i < rows.length; i++){
+        const row = table.insertRow(i)
+        let rowData = []
+        const preData = rows[i].split("\",")
+        const day = preData[0].replace('\"', '')
+        rowData.push(day)
+        if(preData[1]){
+          let extras = preData[1].split(",")
+          rowData.push(...extras)
+        }
+        for(let p=0; p < rowData.length; p++){
+          let cell = row.insertCell(p)
+          cell.innerHTML = rowData[p]
+        } 
+      }
     }
 
-    for(let i=1; i < rows.length; i++){
-      const preData = rows[i].split("\"")
-      let data = preData[0].replace(/,\s*$/, "").split(",")
-      if(preData.length > 1){
-        data.push(preData[1])
-      }
-      const row = table.insertRow(i)
-
-      for(let p=0; p < data.length; p++){
-        let cell = row.insertCell(p)
-        cell.innerHTML = data[p]
-      }
-    }
+    
   }
 
-  function requestCsv(){
+  function renderData(){
+    fillTable('poiviews-table', profileViews)
+    fillTable('visitsafter-table', visitsAfterBrowse)
+    fillTable('totalvisits-table', totalVisits)
+  }
+
+  async function requestReports(){
+    StatsAnalytics.info.report = 'allvisits'
+    const visits = await requestCsv(StatsAnalytics.info.report)
+    totalVisits = visits.split('\n')
+    StatsAnalytics.info.report = 'visitafterbrowse'
+    const visits2 = await requestCsv(StatsAnalytics.info.report)
+    visitsAfterBrowse = visits2.split('\n')
+    StatsAnalytics.info.report = 'profileviews'
+    const visits3 = await requestCsv(StatsAnalytics.info.report) 
+    profileViews = visits3.split('\n')
+    renderData()
+  }
+
+  function requestCsv(report){
     const path = StatsAnalytics.info.country 
       + '/' + StatsAnalytics.info.state
       + '/' + StatsAnalytics.info.region
-      + '/' + StatsAnalytics.info.operator + '/'
+      + '/' + StatsAnalytics.info.operator 
+      + '/' + tomo_id + '/'
 
-    const url = _config.api.retrieveS3ViewURL + path + StatsAnalytics.info.reportCrumb + '-view.csv'
+    const url = _config.api.retrieveS3ViewURL + path + report + '-view.csv'
+    console.log("s3 view", url)
     
-    $.ajax({
+    const results = $.ajax({
           type: "GET",
           url: url,
           dataType: "text",
-          success: handleCsv,
+          success: storeCsvData,
           error: function(err){
             console.log('wrong place')
             console.log(err)
           }
-      });
-    
+      }); 
+
+    return results
   }
 
   function handleImage(data){

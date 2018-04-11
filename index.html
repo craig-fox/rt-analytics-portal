@@ -16,49 +16,31 @@
             <div class="col-sm">
                 <header class="site-header">
                     <h1 class="title">Stats Analytics Portal</h1>
-                    <nav class="navbar navbar-expand-lg navbar-light bg-light">
-                        <a class="home-button" id="signup" href="register.html">Sign Up</a>
-                        <div class="collapse navbar-collapse" id="navbarNav">
-
-                            <ul class="navbar-nav">
-                                <li class="nav-item dropdown">
-                                    <a class="nav-link dropdown-toggle" href="#" id="navbarMonthlyPOIStats"
-                                       data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" >
-                                       Monthly POI Stats
-                                    </a>
-                                    <div class="dropdown-menu" aria-labelledby="navbarMonthlyPOIStats"> 
-                                        <a class="dropdown-item report" id="icontaps" name="Icon Taps" href="#">Total Icon Taps</a>
-                                        <a class="dropdown-item report" id="profileviews" name="Profile Views" href="#">Profile Views</a>
-                                        <a class="dropdown-item report" id="visitafterbrowse" name="Visit after browse" href="#">Visit after browse</a>
-                                        <a class="dropdown-item report" id="allvisits" name="All Visits" href="#">All Visits</a>
-                                    </div>  
-                                </li>
-                            </ul>
-                        </div>
-                    </nav>
-                   
-                    
                 </header>
             </div>
         </div>
         <div class="row">
             <div class="col-sm">
-                <div id="infoContainer" style="width:800px; height:100px; display: none;">
-                   <span id="reportName"></span> report for <span id="operatorName"></span>, <span id="regionName"></span>, <span id="stateName"></span>, <span id="countryName"></span> 
-                   <br/>
-                   <a id="downloadPDF" href="https://s3-ap-southeast-2.amazonaws.com/rt-dashboard-images/Australia/Queensland/Sunshine_Coast/Scotts_Campground/icontaps-view.pdf">Download PDF</a>
+                <div id="infoContainer" style="width:800px; height:100px;">
+                   <span id="reportName"></span>Report for <span id="operatorName"></span>, <span id="regionName"></span>, <span id="stateName"></span>, <span id="countryName"></span> 
                 </div>    
             </div>
         </div>
-         <div class="row">
+        <div class="row">
             <div class="col-sm">
-                <div id="viewContainer" class="container-fluid" style="width:800px; height:700px;">
+                <div id="totalPoiViewsContainer" class="container-fluid" style="width:800px;">
                   <!--ul class="nav nav-tabs" style="width:100%;">
                     <li><a href="#csvData">CSV</a></li>
                   </ul-->
+                  <header class="site-header">
+                    <h3 class="title">Total POI Views Container</h3>
+                  </header>
+                  <a id="poiViewPDF" href="">Download PDF</a>
+                  <a id="poiViewCSV" href="">Download CSV</a>
+                  <br/>
                   <div class="tab-content clearfix">
                     <div class="tab-pane active" id="csvData">
-                      <table class="table" id="dashboard-table">
+                      <table class="table" id="poiviews-table">
                         <tbody id="tableBody">
                         </tbody>
                       </table>
@@ -69,8 +51,47 @@
         </div>
         <div class="row">
             <div class="col-sm">
-                 <footer class="site-footer">
-                    
+                <div id="visitsAfterBrowsingContainer" class="container-fluid" style="width:800px;">
+                  <header class="site-header">
+                    <h3 class="title">Visits After Browsing</h3>
+                  </header>
+                  <a id="visitsAfterPDF" href="">Download PDF</a>
+                  <a id="visitsAfterCSV" href="">Download CSV</a>
+                  <br/>
+                  <div class="tab-content clearfix">
+                    <div class="tab-pane active" id="csvData">
+                      <table class="table" id="visitsafter-table">
+                        <tbody id="tableBody">
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </div>    
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-sm">
+                <div id="totalVisitsContainer" class="container-fluid" style="width:800px;">
+                  <header class="site-header">
+                    <h3 class="title">Total Visits</h3>
+                  </header>
+                  <a id="totalVisitsPDF" href="">Download PDF</a>
+                  <a id="totalVisitsCSV" href="">Download CSV</a>
+                  <br/>
+                  <div class="tab-content clearfix">
+                    <div class="tab-pane active" id="csvData">
+                      <table class="table" id="totalvisits-table">
+                        <tbody id="tableBody">
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </div>    
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-sm">
+                 <footer class="site-footer">   
                  </footer>  
             </div>
         </div>
