@@ -43,21 +43,26 @@
                 <div class="col-sm">
                     <section class="form-wrap">
                         <form id="verifyForm">
-                          <input type="email" id="emailInputVerify" placeholder="Email" required>
-                          <input type="text" id="codeInputVerify" placeholder="Verification Code" pattern=".*" required>
-                          <input type="submit" value="Verify">
+                            <!--div class="form-group">
+                                <label for="emailInputVerify">Email</label>
+                                <input type="email" class="form-control" id="emailInputVerify" placeholder="Email" required>
+                            </div-->
+                            <div class="form-group">
+                                <label for="tomoIDInputVerify">Tomo Id</label>
+                                <input type="text" class="form-control" id="tomoIDInputVerify" placeholder="Tomo Id" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="codeInputVerify">Verification Code</label>
+                                <input type="text" class="form-control" id="codeInputVerify" placeholder="Verification Code" pattern=".*" required>
+                            </div>
+                            <div class="form-group">
+                                <button type="submit" class="btn btn-primary" id="logout">Verify</button>
+                            </div>
                         </form>
                     </section>
                 </div>
             </div>
         </div>
-
-        
-
-        
-
-
-        
 
         <script src="js/vendor/jquery-3.3.1.min.js"></script>
         <script src="js/vendor/bootstrap.min.js"></script>

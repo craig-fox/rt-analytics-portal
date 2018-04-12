@@ -9,7 +9,6 @@ StatsAnalytics.info.state = '';
 StatsAnalytics.info.region = '';
 StatsAnalytics.info.operator = '';
 
-const tomo_id = 3213273;
 let basePath = _config.api.retrieveS3ViewURL
 let poi_data_url = 'https://hywr0jc0lc.execute-api.ap-southeast-2.amazonaws.com/dev/poidata/';
 
@@ -19,7 +18,10 @@ let poi_data_url = 'https://hywr0jc0lc.execute-api.ap-southeast-2.amazonaws.com/
     StatsAnalytics.authToken.then(function setAuthToken(token){
       if(token){
         authToken = token
+        console.log("ohheck", StatsAnalytics.poi_id)
+        console.log("rubber", StatsAnalytics)
         $('#signup').hide()
+        $('#logout').click(StatsAnalytics.signOut)
         $( "li.dropdown" ).prop( "disabled", false );
       } else {
         window.location.href="signin.html"
@@ -38,6 +40,9 @@ let poi_data_url = 'https://hywr0jc0lc.execute-api.ap-southeast-2.amazonaws.com/
   let profileViews = []; 
 
   $(function() {
+    const tomo_id = StatsAnalytics.poi_id || -1
+     $("#poi_id").text(tomo_id)
+    console.log("The tomo id is", tomo_id)
     let fetchUrl = poi_data_url + tomo_id
     console.log('Fetch URL', fetchUrl)
 

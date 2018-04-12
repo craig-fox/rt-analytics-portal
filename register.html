@@ -46,11 +46,22 @@
                 <div class="col-sm">
                     <section class="form-wrap">
                         <form id="registrationForm">
-                          <input type="email" id="emailInputRegister" placeholder="Email" pattern=".*" required>
-                          <input type="password" id="passwordInputRegister" placeholder="Password" pattern=".*" required>
-                          <input type="password" id="password2InputRegister" placeholder="Confirm Password" pattern=".*" required>
-
-                          <input type="submit" value="Submit">
+                          <div class="form-group">
+                            <label for="emailInputRegister">Email</label>
+                            <input type="email" class="form-control" id="emailInputRegister" placeholder="Email" pattern=".*" required>
+                          </div>
+                          <div class="form-group">
+                            <label for="tomoIDInputRegister">Tomo ID</label>
+                            <input type="text" class="form-control" id="tomoIDInputRegister" placeholder="Tomo ID" pattern=".*" required>
+                          </div>
+                          <div class="form-group">
+                             <label for="emailInputRegister">Password</label>
+                             <input type="password" class="form-control" id="passwordInputRegister" placeholder="Password" pattern=".*" required>
+                             <input type="password" class="form-control" id="password2InputRegister" placeholder="Confirm Password" pattern=".*" required>
+                          </div>
+                          <div class="form-group">
+                            <button type="submit" class="btn btn-primary" id="logout">Submit</button>
+                          </div> 
                         </form>
                     </section>
                 </div>

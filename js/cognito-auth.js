@@ -31,7 +31,7 @@ var StatsAnalytics = window.StatsAnalytics || {};
 
     StatsAnalytics.authToken = new Promise(function fetchCurrentAuthToken(resolve, reject) {
         let cognitoUser = userPool.getCurrentUser();
-
+        console.log("The cognito user", cognitoUser)
         if (cognitoUser) {
             cognitoUser.getSession(function sessionCallback(err, session) {
                 if (err) {
@@ -39,6 +39,7 @@ var StatsAnalytics = window.StatsAnalytics || {};
                 } else if (!session.isValid()) {
                     resolve(null);
                 } else {
+                    StatsAnalytics.poi_id = cognitoUser.username 
                     resolve(session.getIdToken().getJwtToken());
                 }
             });
@@ -47,19 +48,28 @@ var StatsAnalytics = window.StatsAnalytics || {};
         }
     });
 
-
     /*
      * Cognito User Pool functions
      */
 
-    function register(email, password, onSuccess, onFailure) {
-        var dataEmail = {
+    function register(email, tomo_id, password, onSuccess, onFailure) {
+        let attributeList = []
+
+        const dataEmail = {
             Name: 'email',
             Value: email
         };
-        var attributeEmail = new AmazonCognitoIdentity.CognitoUserAttribute(dataEmail);
+        const dataTomoID = {
+            Name: 'custom:tomo_id',
+            Value: tomo_id
+        };
 
-        userPool.signUp(toUsername(email), password, [attributeEmail], null,
+        const attributeEmail = new AmazonCognitoIdentity.CognitoUserAttribute(dataEmail);
+        const attributeTomoID = new AmazonCognitoIdentity.CognitoUserAttribute(dataTomoID);
+        attributeList.push(attributeEmail)
+        attributeList.push(attributeTomoID)
+
+        userPool.signUp(tomo_id, password, attributeList, null,
             function signUpCallback(err, result) {
                 if (!err) {
                     onSuccess(result);
@@ -75,7 +85,7 @@ var StatsAnalytics = window.StatsAnalytics || {};
             Username: toUsername(email),
             Password: password
         });
-
+        console.log("Signin cowboy")
 
 
         var cognitoUser = createCognitoUser(email);
@@ -86,8 +96,16 @@ var StatsAnalytics = window.StatsAnalytics || {};
         });
     }
 
-    function verify(email, code, onSuccess, onFailure) {
-        createCognitoUser(email).confirmRegistration(code, true, function confirmCallback(err, result) {
+    function verify(tomo_id, code, onSuccess, onFailure) {
+        console.log("Verifying the user")
+        /*createCognitoUser(email).confirmRegistration(code, true, function confirmCallback(err, result) {
+            if (!err) {
+                onSuccess(result);
+            } else {
+                onFailure(err);
+            }
+        }); */
+        createCognitoUser(tomo_id).confirmRegistration(code, true, function confirmCallback(err, result) {
             if (!err) {
                 onSuccess(result);
             } else {
@@ -96,9 +114,16 @@ var StatsAnalytics = window.StatsAnalytics || {};
         });
     }
 
-    function createCognitoUser(email) {
+   /* function createCognitoUser(email) {
         return new AmazonCognitoIdentity.CognitoUser({
             Username: toUsername(email),
+            Pool: userPool
+        });
+    } */
+
+    function createCognitoUser(tomo_id) {
+        return new AmazonCognitoIdentity.CognitoUser({
+            Username: tomo_id,
             Pool: userPool
         });
     }
@@ -121,7 +146,7 @@ var StatsAnalytics = window.StatsAnalytics || {};
         var email = $('#emailInputSignin').val();
         var password = $('#passwordInputSignin').val();
         event.preventDefault();
-
+        console.log("Squeer eggs")
         signin(email, password,
             function signinSuccess() {
                 console.log('Successfully Logged In');
@@ -136,12 +161,14 @@ var StatsAnalytics = window.StatsAnalytics || {};
 
     function handleRegister(event) {
         var email = $('#emailInputRegister').val();
+        var tomo_id = $('#tomoIDInputRegister').val();
         var password = $('#passwordInputRegister').val();
         var password2 = $('#password2InputRegister').val();
 
         var onSuccess = function registerSuccess(result) {
             var cognitoUser = result.user;
             console.log('user name is ' + cognitoUser.getUsername());
+            console.log('The User ' + JSON.stringify(cognitoUser));
             var confirmation = ('Registration successful. Please check your email inbox or spam folder for your verification code.');
             if (confirmation) {
                 window.location.href = 'verify.html';
@@ -154,17 +181,18 @@ var StatsAnalytics = window.StatsAnalytics || {};
         event.preventDefault();
 
         if (password === password2) {
-            register(email, password, onSuccess, onFailure);
+            register(email, tomo_id, password, onSuccess, onFailure);
         } else {
             alert('Passwords do not match');
         }
     }
 
     function handleVerify(event) {
-        var email = $('#emailInputVerify').val();
-        var code = $('#codeInputVerify').val();
+       // var email = $('#emailInputVerify').val();
+        const tomo_id = $('#tomoIDInputVerify').val();
+        const code = $('#codeInputVerify').val();
         event.preventDefault();
-        verify(email, code,
+        verify(tomo_id, code,
             function verifySuccess(result) {
                 console.log('call result: ' + result);
                 console.log('Successfully verified');
