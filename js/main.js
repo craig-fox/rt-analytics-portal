@@ -4,20 +4,14 @@ var StatsAnalytics = window.StatsAnalytics || {};
 StatsAnalytics.map = StatsAnalytics.map || {};
 StatsAnalytics.info = StatsAnalytics.info || {};
 
-//Fixed data
-StatsAnalytics.info.country = 'New Zealand';
-StatsAnalytics.info.state = 'Auckland';
-StatsAnalytics.info.region = 'Northland';
-StatsAnalytics.info.operator = 'craigs-place';
+StatsAnalytics.info.country = '';
+StatsAnalytics.info.state = '';
+StatsAnalytics.info.region = '';
+StatsAnalytics.info.operator = '';
 
 const tomo_id = 3213273;
-const basePath = 'https://s3-ap-southeast-2.amazonaws.com/rt-dashboard-images/'
-  + StatsAnalytics.info.country + '/'
-  + StatsAnalytics.info.state + '/'
-  + StatsAnalytics.info.region + '/'
-  + StatsAnalytics.info.operator + '/'
-  + tomo_id + '/';
-
+let basePath = _config.api.retrieveS3ViewURL
+let poi_data_url = 'https://hywr0jc0lc.execute-api.ap-southeast-2.amazonaws.com/dev/poidata/';
 
 (function($){
   let authToken;
@@ -38,23 +32,48 @@ const basePath = 'https://s3-ap-southeast-2.amazonaws.com/rt-dashboard-images/'
     $( "li.dropdown" ).prop( "disabled", true );
   }
 
-  $("#operatorName").text(StatsAnalytics.info.operator)
-  $("#regionName").text(StatsAnalytics.info.region)
-  $("#stateName").text(StatsAnalytics.info.state)
-  $("#countryName").text(StatsAnalytics.info.country)
   
   let totalVisits = [];
   let visitsAfterBrowse = [];
   let profileViews = []; 
 
   $(function() {
-    requestReports()
-    $('#poiViewPDF').attr('href', basePath + 'profileviews-view.pdf')
-    $('#poiViewCSV').attr('href', basePath + 'profileviews-view.csv')
-    $('#visitsAfterPDF').attr('href', basePath + 'visitafterbrowse-view.pdf')
-    $('#visitsAfterCSV').attr('href', basePath + 'visitafterbrowse-view.csv')
-    $('#totalVisitsPDF').attr('href', basePath + 'allvisits-view.pdf')
-    $('#totalVisitsCSV').attr('href', basePath + 'allvisits-view.csv')
+    let fetchUrl = poi_data_url + tomo_id
+    console.log('Fetch URL', fetchUrl)
+
+    fetch(fetchUrl)
+    .then(function(response) {
+      return response.json() 
+    })
+    .then(function(result) {
+      console.log(result);
+      StatsAnalytics.info.country = result.country;
+      StatsAnalytics.info.state = result.state;
+      StatsAnalytics.info.region = result.region;
+      StatsAnalytics.info.operator = result.operator;
+      basePath = basePath + StatsAnalytics.info.country 
+        + '/' + StatsAnalytics.info.state 
+        + '/' + StatsAnalytics.info.region
+        + '/' + StatsAnalytics.info.operator + '/'
+     
+      $("#operatorName").text(StatsAnalytics.info.operator)
+      $("#regionName").text(StatsAnalytics.info.region)
+      $("#stateName").text(StatsAnalytics.info.state)
+      $("#countryName").text(StatsAnalytics.info.country)
+  
+      requestReports()
+      const downloadPath = basePath + tomo_id + '/'
+      $('#poiViewPDF').attr('href', downloadPath + 'profileviews-view.pdf')
+      $('#poiViewCSV').attr('href', downloadPath + 'profileviews-view.csv')
+      $('#visitsAfterPDF').attr('href', downloadPath + 'visitafterbrowse-view.pdf')
+      $('#visitsAfterCSV').attr('href', downloadPath + 'visitafterbrowse-view.csv')
+      $('#totalVisitsPDF').attr('href', downloadPath + 'allvisits-view.pdf')
+      $('#totalVisitsCSV').attr('href', downloadPath + 'allvisits-view.csv') 
+    })
+    .catch(function(error) {
+      console.log("Problem occurred", error)
+    });   
+   
   });
 
   function requestImage(name){
@@ -163,13 +182,9 @@ const basePath = 'https://s3-ap-southeast-2.amazonaws.com/rt-dashboard-images/'
   }
 
   function requestCsv(report){
-    const path = StatsAnalytics.info.country 
-      + '/' + StatsAnalytics.info.state
-      + '/' + StatsAnalytics.info.region
-      + '/' + StatsAnalytics.info.operator 
-      + '/' + tomo_id + '/'
+    const path = basePath + tomo_id + '/'
 
-    const url = _config.api.retrieveS3ViewURL + path + report + '-view.csv'
+    const url = path + report + '-view.csv'
     console.log("s3 view", url)
     
     const results = $.ajax({
