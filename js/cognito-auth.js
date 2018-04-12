@@ -39,7 +39,7 @@ var StatsAnalytics = window.StatsAnalytics || {};
                 } else if (!session.isValid()) {
                     resolve(null);
                 } else {
-                    StatsAnalytics.poi_id = cognitoUser.username 
+                    StatsAnalytics.tomo_id = cognitoUser.username 
                     resolve(session.getIdToken().getJwtToken());
                 }
             });
@@ -89,7 +89,7 @@ var StatsAnalytics = window.StatsAnalytics || {};
 
 
         var cognitoUser = createCognitoUser(email);
-         console.log(JSON.stringify(authenticationDetails))
+        console.log(JSON.stringify(authenticationDetails))
         cognitoUser.authenticateUser(authenticationDetails, {
             onSuccess: onSuccess,
             onFailure: onFailure
@@ -98,13 +98,6 @@ var StatsAnalytics = window.StatsAnalytics || {};
 
     function verify(tomo_id, code, onSuccess, onFailure) {
         console.log("Verifying the user")
-        /*createCognitoUser(email).confirmRegistration(code, true, function confirmCallback(err, result) {
-            if (!err) {
-                onSuccess(result);
-            } else {
-                onFailure(err);
-            }
-        }); */
         createCognitoUser(tomo_id).confirmRegistration(code, true, function confirmCallback(err, result) {
             if (!err) {
                 onSuccess(result);
@@ -113,13 +106,6 @@ var StatsAnalytics = window.StatsAnalytics || {};
             }
         });
     }
-
-   /* function createCognitoUser(email) {
-        return new AmazonCognitoIdentity.CognitoUser({
-            Username: toUsername(email),
-            Pool: userPool
-        });
-    } */
 
     function createCognitoUser(tomo_id) {
         return new AmazonCognitoIdentity.CognitoUser({
@@ -143,11 +129,10 @@ var StatsAnalytics = window.StatsAnalytics || {};
     });
 
     function handleSignin(event) {
-        var email = $('#emailInputSignin').val();
+        var tomo_id = $('#tomoIDInputSignin').val();
         var password = $('#passwordInputSignin').val();
         event.preventDefault();
-        console.log("Squeer eggs")
-        signin(email, password,
+        signin(tomo_id, password,
             function signinSuccess() {
                 console.log('Successfully Logged In');
                 window.location.href = 'index.html';

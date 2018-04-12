@@ -10,7 +10,8 @@ StatsAnalytics.info.region = '';
 StatsAnalytics.info.operator = '';
 
 let basePath = _config.api.retrieveS3ViewURL
-let poi_data_url = 'https://hywr0jc0lc.execute-api.ap-southeast-2.amazonaws.com/dev/poidata/';
+let poi_data_url = _config.api.poiDataURL;
+let my_tomo_id = -1;
 
 (function($){
   let authToken;
@@ -18,8 +19,6 @@ let poi_data_url = 'https://hywr0jc0lc.execute-api.ap-southeast-2.amazonaws.com/
     StatsAnalytics.authToken.then(function setAuthToken(token){
       if(token){
         authToken = token
-        console.log("ohheck", StatsAnalytics.poi_id)
-        console.log("rubber", StatsAnalytics)
         $('#signup').hide()
         $('#logout').click(StatsAnalytics.signOut)
         $( "li.dropdown" ).prop( "disabled", false );
@@ -40,10 +39,10 @@ let poi_data_url = 'https://hywr0jc0lc.execute-api.ap-southeast-2.amazonaws.com/
   let profileViews = []; 
 
   $(function() {
-    const tomo_id = StatsAnalytics.poi_id || -1
-     $("#poi_id").text(tomo_id)
-    console.log("The tomo id is", tomo_id)
-    let fetchUrl = poi_data_url + tomo_id
+    my_tomo_id = StatsAnalytics.tomo_id || -1
+    $("#tomo_id").text(my_tomo_id)
+    console.log("The tomo id is", my_tomo_id)
+    let fetchUrl = poi_data_url + my_tomo_id
     console.log('Fetch URL', fetchUrl)
 
     fetch(fetchUrl)
@@ -67,7 +66,7 @@ let poi_data_url = 'https://hywr0jc0lc.execute-api.ap-southeast-2.amazonaws.com/
       $("#countryName").text(StatsAnalytics.info.country)
   
       requestReports()
-      const downloadPath = basePath + tomo_id + '/'
+      const downloadPath = basePath + my_tomo_id + '/'
       $('#poiViewPDF').attr('href', downloadPath + 'profileviews-view.pdf')
       $('#poiViewCSV').attr('href', downloadPath + 'profileviews-view.csv')
       $('#visitsAfterPDF').attr('href', downloadPath + 'visitafterbrowse-view.pdf')
@@ -187,8 +186,7 @@ let poi_data_url = 'https://hywr0jc0lc.execute-api.ap-southeast-2.amazonaws.com/
   }
 
   function requestCsv(report){
-    const path = basePath + tomo_id + '/'
-
+    const path = basePath + my_tomo_id + '/'
     const url = path + report + '-view.csv'
     console.log("s3 view", url)
     
