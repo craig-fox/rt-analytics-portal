@@ -18,26 +18,28 @@ let my_tomo_id = -1;
   if(StatsAnalytics.authToken){
     StatsAnalytics.authToken.then(function setAuthToken(token){
       if(token){
+        console.log("Token authenticated")
         authToken = token
         $('#signup').hide()
         $('#logout').click(StatsAnalytics.signOut)
         $( "li.dropdown" ).prop( "disabled", false );
       } else {
-        window.location.href="signin.html"
+        console.log("Token not authenticated")
+       // window.location.href="signin.html"
       }
     }).catch(function handleTokenError(error){
-      window.location.href="signin.html"
+      console.log("Handling token error")
+      //window.location.href="signin.html"
     })
   } else {
+    console.log("There is no SA auth token")
+    window.location.href="signin.html"
     $('#signup').show();
     $( "li.dropdown" ).prop( "disabled", true );
   }
-
   
-  let totalVisits = [];
-  let visitsAfterBrowse = [];
-  let profileViews = []; 
-
+  let poiStats = [];
+ 
   $(function() {
     my_tomo_id = StatsAnalytics.tomo_id || -1
     $("#tomo_id").text(my_tomo_id)
@@ -65,25 +67,16 @@ let my_tomo_id = -1;
       $("#stateName").text(StatsAnalytics.info.state)
       $("#countryName").text(StatsAnalytics.info.country)
   
-      requestReports()
+      renderPdf()
       const downloadPath = basePath + my_tomo_id + '/'
-      $('#poiViewPDF').attr('href', downloadPath + 'profileviews-view.pdf')
-      $('#poiViewCSV').attr('href', downloadPath + 'profileviews-view.csv')
-      $('#visitsAfterPDF').attr('href', downloadPath + 'visitafterbrowse-view.pdf')
-      $('#visitsAfterCSV').attr('href', downloadPath + 'visitafterbrowse-view.csv')
-      $('#totalVisitsPDF').attr('href', downloadPath + 'allvisits-view.pdf')
-      $('#totalVisitsCSV').attr('href', downloadPath + 'allvisits-view.csv') 
+      $('#poiStatsCSV').attr('href', downloadPath + 'poistats-view.csv')
+   
     })
     .catch(function(error) {
       console.log("Problem occurred", error)
     });   
    
   });
-
-  function requestImage(name){
-    const url = _config.api.retrieveS3ViewURL + name + '/view.png'
-    $("#img").attr('src', url)
-  }
 
   function storeCsvData(result){
     const rows = result.split("\n")
@@ -92,19 +85,11 @@ let my_tomo_id = -1;
     let data = []
     data.push(header)
 
-    if(StatsAnalytics.info.report === 'profileviews'){
-       for(let i=1; i < rows.length; i++){
-        const preData = rows[i].split("\"")
-        const line = preData[0].replace(/,\s*$/, "") + preData[1]
+    for(let i=1; i < rows.length; i++){
+        const line = rows[i]
         data.push(line)
-      }
-    } else {
-      for(let i=1; i < rows.length; i++){
-          const line = rows[i]
-          data.push(line)
-      }
     }
-
+  
     return new Promise(
         function (resolve, reject) {
             resolve(data)
@@ -117,12 +102,7 @@ let my_tomo_id = -1;
     const table = document.getElementById(tableName)
     const theader = table.createTHead()
     const row = theader.insertRow(0)
-
     const header = rows[0].split(',')
-
-    if(tableName === 'poiviews-table'){
-       header.pop() //Remove column with nonsensical value, 0))"
-    } 
 
     for(let i=0; i < header.length; i++){
       let cell = row.insertCell(i)
@@ -164,28 +144,39 @@ let my_tomo_id = -1;
           cell.innerHTML = rowData[p]
         } 
       }
-    }
-
-    
+    } 
   }
 
-  function renderData(){
-    fillTable('poiviews-table', profileViews)
-    fillTable('visitsafter-table', visitsAfterBrowse)
-    fillTable('totalvisits-table', totalVisits)
+  function getStartEndDates(stats){
+    const rowData = stats.split("\n")
+    let startDate = '', endDate = ''
+    let gzItems = rowData.filter(s => s.includes('gz'))  
+    const startDateItem = gzItems[0]
+    const endDateItem = gzItems[gzItems.length-1]
+    startDate = startDateItem.split("\",")[0].replace("\"", "")
+    endDate = endDateItem.split("\",")[0].replace("\"", "")
+    $("#startDate").text(startDate)
+    $("#endDate").text(endDate)
+  }
+
+  function renderData(stats){
+    getStartEndDates(stats)
+  }
+
+  function renderPdf(){
+    const path = basePath + my_tomo_id + '/'
+    StatsAnalytics.info.report = 'poistats'
+    const url = path + StatsAnalytics.info.report + '-view.pdf'
+    console.log("pdf-s3 view", url)
+    $("#poiStatsPDFDisplay").attr("data", url)
+    $("#poiStatsPDF").attr("href", url)
+    requestReports()
   }
 
   async function requestReports(){
-    StatsAnalytics.info.report = 'allvisits'
-    const visits = await requestCsv(StatsAnalytics.info.report)
-    totalVisits = visits.split('\n')
-    StatsAnalytics.info.report = 'visitafterbrowse'
-    const visits2 = await requestCsv(StatsAnalytics.info.report)
-    visitsAfterBrowse = visits2.split('\n')
-    StatsAnalytics.info.report = 'profileviews'
-    const visits3 = await requestCsv(StatsAnalytics.info.report) 
-    profileViews = visits3.split('\n')
-    renderData()
+    StatsAnalytics.info.report = 'poistats'
+    const stats = await requestCsv(StatsAnalytics.info.report)
+    renderData(stats)
   }
 
   function requestCsv(report){
@@ -205,11 +196,6 @@ let my_tomo_id = -1;
       }); 
 
     return results
-  }
-
-  function handleImage(data){
-    /** Need to find out how to display image loaded from API Gateway */
-     console.log("Handling the data");
   }
 
 }(jQuery));

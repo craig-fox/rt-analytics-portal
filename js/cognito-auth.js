@@ -26,7 +26,9 @@ var StatsAnalytics = window.StatsAnalytics || {};
     } 
 
     StatsAnalytics.signOut = function signOut() {
+        console.log("Signing out of the app")
         userPool.getCurrentUser().signOut();
+        window.location.href = 'signin.html'; 
     };
 
     StatsAnalytics.authToken = new Promise(function fetchCurrentAuthToken(resolve, reject) {
@@ -35,10 +37,13 @@ var StatsAnalytics = window.StatsAnalytics || {};
         if (cognitoUser) {
             cognitoUser.getSession(function sessionCallback(err, session) {
                 if (err) {
+                    console.log("An error is here")
                     reject(err);
                 } else if (!session.isValid()) {
+                     console.log("Not a valid session")
                     resolve(null);
                 } else {
+                    console.log("Working OK")
                     StatsAnalytics.tomo_id = cognitoUser.username 
                     resolve(session.getIdToken().getJwtToken());
                 }
@@ -80,16 +85,15 @@ var StatsAnalytics = window.StatsAnalytics || {};
         );
     }
 
-    function signin(email, password, onSuccess, onFailure) {
-        var authenticationDetails = new AmazonCognitoIdentity.AuthenticationDetails({
-            Username: toUsername(email),
+    function signin(tomo_id, password, onSuccess, onFailure) {
+        const authenticationDetails = new AmazonCognitoIdentity.AuthenticationDetails({
+            Username: tomo_id,
             Password: password
         });
-        console.log("Signin cowboy")
-
-
-        var cognitoUser = createCognitoUser(email);
-        console.log(JSON.stringify(authenticationDetails))
+        
+        const cognitoUser = createCognitoUser(tomo_id);
+        //console.log(JSON.stringify(authenticationDetails))
+        console.log("User Details", JSON.stringify(cognitoUser))
         cognitoUser.authenticateUser(authenticationDetails, {
             onSuccess: onSuccess,
             onFailure: onFailure
@@ -105,6 +109,28 @@ var StatsAnalytics = window.StatsAnalytics || {};
                 onFailure(err);
             }
         });
+    }
+
+    function resetPassword(tomo_id, code, password){
+        let cognitoUser = createCognitoUser(tomo_id)
+        console.log("The user", JSON.stringify(err))
+        
+        cognitoUser.forgotPassword({
+            onSuccess: function(result){
+                console.log('result', result)
+            },
+            onFailure: function(err){
+                alert(JSON.stringify(err))
+                console.log("Reset password error", JSON.stringify(err))
+            },
+            inputVerificationCode(){
+                console.log("For tomoid", tomo_id)
+                console.log("For code", code)
+                console.log("For password", password)
+                console.log("Time for input verification")
+                cognitoUser.confirmPassword(code, password, this)
+            }
+        })          
     }
 
     function createCognitoUser(tomo_id) {
@@ -126,11 +152,14 @@ var StatsAnalytics = window.StatsAnalytics || {};
         $('#signinForm').submit(handleSignin);
         $('#registrationForm').submit(handleRegister);
         $('#verifyForm').submit(handleVerify);
+        $('#passwordResetForm').submit(handlePasswordReset);
     });
 
     function handleSignin(event) {
-        var tomo_id = $('#tomoIDInputSignin').val();
-        var password = $('#passwordInputSignin').val();
+        const tomo_id = $('#tomoIDInputSignin').val();
+        const password = $('#passwordInputSignin').val();
+        console.log("Tomo ID", tomo_id)
+        console.log("Password", password)
         event.preventDefault();
         signin(tomo_id, password,
             function signinSuccess() {
@@ -138,10 +167,24 @@ var StatsAnalytics = window.StatsAnalytics || {};
                 window.location.href = 'index.html';
             },
             function signinError(err) {
-                console.log(JSON.stringify(err))
-                alert(err);
+                if(err.name === 'PasswordResetRequiredException'){
+                    window.location.href = 'password-reset.html'; 
+                } else {
+                    console.log("Error:", JSON.stringify(err))
+                    alert(JSON.stringify(err));
+                }
+               
             }
         );
+    }
+
+    function handlePasswordReset(event) {
+        const tomo_id = $('#tomoIDInputReset').val();
+        const code = $('#passwordResetCode').val();
+        const password1 = $('#passwordResetNew').val();
+        const password2 = $('#passwordResetNew').val();
+        event.preventDefault();
+        resetPassword(tomo_id, code, password);
     }
 
     function handleRegister(event) {
@@ -161,7 +204,7 @@ var StatsAnalytics = window.StatsAnalytics || {};
         };
         var onFailure = function registerFailure(err) {
             console.log(JSON.stringify(err))
-            alert(err);
+            alert(JSON.stringify(err));
         };
         event.preventDefault();
 
@@ -185,7 +228,7 @@ var StatsAnalytics = window.StatsAnalytics || {};
                 window.location.href = signinUrl;
             },
             function verifyError(err) {
-                alert(err);
+                alert(JSON.stringify(err));
             }
         );
     }

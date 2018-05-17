@@ -19,39 +19,45 @@
         <!--[if lt IE 7]>
             <p class="chromeframe">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> or <a href="http://www.google.com/chromeframe/?redirect=true">activate Google Chrome Frame</a> to improve your experience.</p>
         <![endif]-->
-
-        <div id="noCognitoMessage" class="configMessage" style="display: none;">
-            <div class="backdrop"></div>
-            <div class="panel panel-default">
-                <div class="panel-heading">
-                    <h3 class="panel-title">No Cognito User Pool Configured</h3>
+        <div class="container-fluid portal-view">
+            <div class="row">
+                <div class="col-sm">
+                    <div id="noCognitoMessage" class="configMessage" style="display: none;">
+                        <div class="backdrop"></div>
+                        <div class="panel panel-default">
+                            <div class="panel-heading">
+                                <h3 class="panel-title">No Cognito User Pool Configured</h3>
+                            </div>
+                            <div class="panel-body">
+                                <p>There is no user pool configured in <a href="/js/config.js">/js/config.js</a>.</p>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                <div class="panel-body">
-                    <p>There is no user pool configured in <a href="/js/config.js">/js/config.js</a>.</p>
+            </div>
+            <div class="row">
+                <div class="col-sm">
+                    <section class="form-wrap">
+                        <h1>Sign In</h1>
+                        <form id="signinForm">
+                          <!--input type="email" id="emailInputSignin" placeholder="Email" required-->
+                          <div class="form-group">
+                            <label for="tomoIDInputSignin">Tomo ID</label>
+                            <input type="text" class="form-control" id="tomoIDInputSignin" placeholder="Tomo Id" required>
+                          </div>
+                          <div class="form-group">
+                            <label for="passwordInputSignin">Password</label>
+                            <input type="password" class="form-control" id="passwordInputSignin" placeholder="Password" pattern=".*" required>
+                          </div>
+                          <div class="form-group">
+                             <!--input type="submit" value="Sign in"-->
+                             <button type="submit" class="btn btn-primary" id="logout">Sign In</button>
+                          </div>
+                        </form>
+                    </section>
                 </div>
             </div>
         </div>
-
-        <header></header>
-
-        <section class="form-wrap">
-            <h1>Sign In</h1>
-            <form id="signinForm">
-              <!--input type="email" id="emailInputSignin" placeholder="Email" required-->
-              <div class="form-group">
-                <label for="tomoIDInputSignin">Tomo ID</label>
-                <input type="text" class="form-control" id="tomoIDInputSignin" placeholder="Tomo Id" required>
-              </div>
-              <div class="form-group">
-                <label for="passwordInputSignin">Password</label>
-                <input type="password" class="form-control" id="passwordInputSignin" placeholder="Password" pattern=".*" required>
-              </div>
-              <div class="form-group">
-                 <!--input type="submit" value="Sign in"-->
-                 <button type="submit" class="btn btn-primary" id="logout">Sign In</button>
-              </div>
-            </form>
-        </section>
 
         <script src="js/vendor/jquery-3.3.1.min.js"></script>
         <script src="js/vendor/bootstrap.min.js"></script>
