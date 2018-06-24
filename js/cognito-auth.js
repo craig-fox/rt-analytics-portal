@@ -111,9 +111,9 @@ var StatsAnalytics = window.StatsAnalytics || {};
         });
     }
 
-    function resetPassword(tomo_id, code, password){
+    function resetPassword(tomo_id){
         let cognitoUser = createCognitoUser(tomo_id)
-        console.log("The user", JSON.stringify(err))
+        console.log("Resetting password for tomo id", tomo_id)
         
         cognitoUser.forgotPassword({
             onSuccess: function(result){
@@ -124,11 +124,47 @@ var StatsAnalytics = window.StatsAnalytics || {};
                 console.log("Reset password error", JSON.stringify(err))
             },
             inputVerificationCode(){
-                console.log("For tomoid", tomo_id)
-                console.log("For code", code)
-                console.log("For password", password)
-                console.log("Time for input verification")
-                cognitoUser.confirmPassword(code, password, this)
+                const code = prompt('Please input verification code', '')
+                console.log('Code', code)
+                if(code !== null && code !== ''){
+                    let newPassword = ''
+                    let confirmPassword = ''
+                    bootbox.prompt({
+                        title:'Enter new password',
+                        inputType: 'password',
+                        callback: function(result){
+                            newPassword = result
+                            bootbox.prompt({
+                                title: 'Re-enter new password',
+                                inputType: 'password',
+                                callback: function(result){
+                                    confirmPassword = result
+                                    console.log("New password", newPassword)
+                                    console.log("Confirm password", confirmPassword)
+                                    if(newPassword === confirmPassword){
+                                        cognitoUser.confirmPassword(code, newPassword, {
+                                            onFailure(err){
+                                                console.log(err)
+                                            },
+                                            onSuccess(){
+                                                console.log("Changed password for", tomo_id)
+                                            }
+                                        });
+                                    } else {
+                                        alert("Passwords do not match")
+                                    } 
+
+                                }
+                            })
+                        }
+                    }) 
+                } else {
+                    console.log("Cancelled it")
+                    window.location.href = 'index.html';
+
+                }
+
+                
             }
         })          
     }
@@ -180,11 +216,9 @@ var StatsAnalytics = window.StatsAnalytics || {};
 
     function handlePasswordReset(event) {
         const tomo_id = $('#tomoIDInputReset').val();
-        const code = $('#passwordResetCode').val();
-        const password1 = $('#passwordResetNew').val();
-        const password2 = $('#passwordResetNew').val();
+        console.log("Handling password reset")
         event.preventDefault();
-        resetPassword(tomo_id, code, password);
+        resetPassword(tomo_id);
     }
 
     function handleRegister(event) {
