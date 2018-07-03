@@ -1,6 +1,6 @@
 /*global StatsAnalytics _config*/
 
-var StatsAnalytics = window.StatsAnalytics || {};
+//let StatsAnalytics = window.StatsAnalytics || {};
 StatsAnalytics.map = StatsAnalytics.map || {};
 StatsAnalytics.info = StatsAnalytics.info || {};
 
@@ -29,7 +29,7 @@ let my_tomo_id = -1;
         window.location.href="signin.html"
       }
     }).catch(function handleTokenError(error){
-      console.log("Handling token error")
+      console.log("Handling token error", error)
       window.location.href="signin.html"
     })
   } else {
@@ -41,8 +41,8 @@ let my_tomo_id = -1;
   
   let poiStats = []
   let tableFilled = false
-  //const monthyear = moment().set({'year':2018, 'month': 3}).format('YYYYMM')
-  const monthyear = moment().subtract(1, 'months').format('YYYYMM')
+  const monthyear = moment().set({'year':2018, 'month': 4}).format('YYYYMM')
+ // const monthyear = moment().subtract(1, 'months').format('YYYYMM')
   console.log("Month Year is", monthyear)
  
   $(function() {

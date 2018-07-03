@@ -1,6 +1,6 @@
 /*global StatsAnalytics _config AmazonCognitoIdentity AWSCognito*/
 
-var StatsAnalytics = window.StatsAnalytics || {};
+let StatsAnalytics = window.StatsAnalytics || {};
 
 (function scopeWrapper($) {
     const signinUrl = 'signin.html';
@@ -26,55 +26,78 @@ var StatsAnalytics = window.StatsAnalytics || {};
     } 
 
     StatsAnalytics.signOut = function signOut() {
-        console.log("Signing out of the app")
         userPool.getCurrentUser().signOut();
         window.location.href = 'signin.html'; 
-    };
+    }; 
+   
 
-    StatsAnalytics.authToken = new Promise(function fetchCurrentAuthToken(resolve, reject) {
-        let cognitoUser = userPool.getCurrentUser();
-        console.log("The cognito user", cognitoUser)
-        if (cognitoUser) {
-            cognitoUser.getSession(function sessionCallback(err, session) {
-                if (err) {
-                    console.log("An error is here")
-                    reject(err);
-                } else if (!session.isValid()) {
-                     console.log("Not a valid session")
-                    resolve(null);
-                } else {
-                    console.log("Working OK")
-                    StatsAnalytics.tomo_id = cognitoUser.username 
-                    resolve(session.getIdToken().getJwtToken());
-                }
-            });
-        } else {
-            resolve(null);
-        }
-    });
-
+    if(typeof StatsAnalytics.authToken === 'undefined'){
+        StatsAnalytics.authToken = new Promise(function fetchCurrentAuthToken(resolve, reject) {
+            let cognitoUser = userPool.getCurrentUser();
+            console.log("The cognito user", cognitoUser)
+            if (cognitoUser) {
+                cognitoUser.getSession(function sessionCallback(err, session) {
+                    if (err) {
+                        console.log("An error is here")
+                        reject(err);
+                    } else if (!session.isValid()) {
+                         console.log("Not a valid session")
+                        resolve(null);
+                    } else {
+                        console.log("Working OK")
+                        const jwtToken = session.getIdToken().getJwtToken()
+                        const sessionInfo = jwt_decode(jwtToken)
+                       // console.log("Group", sessionInfo['cognito:groups'])
+                        const groups = sessionInfo['cognito:groups']
+                        console.log("Groups", groups)
+                        if(groups !== undefined && groups.indexOf("admin") >= 0){
+                            StatsAnalytics.admin = 'true'
+                        } else {
+                            StatsAnalytics.admin = 'false'
+                        }
+                        console.log("This user is an admin", StatsAnalytics.admin)
+                        StatsAnalytics.tomo_id = cognitoUser.username 
+                        resolve(jwtToken);
+                    }
+                });
+            } else {
+                resolve(null);
+            }
+        });
+    } else {
+        console.log("Auth token exists")
+    }
+    
+  
     /*
      * Cognito User Pool functions
      */
 
-    function register(email, tomo_id, password, onSuccess, onFailure) {
+    function register(user, onSuccess, onFailure) {
         let attributeList = []
 
         const dataEmail = {
             Name: 'email',
-            Value: email
+            Value: user.email
         };
         const dataTomoID = {
             Name: 'custom:tomo_id',
-            Value: tomo_id
+            Value: user.tomo_id
         };
+        const dataAdmin = {
+            Name: 'custom:admin',
+            Value: user.admin
+        }
 
         const attributeEmail = new AmazonCognitoIdentity.CognitoUserAttribute(dataEmail);
         const attributeTomoID = new AmazonCognitoIdentity.CognitoUserAttribute(dataTomoID);
+        const attributeAdmin = new AmazonCognitoIdentity.CognitoUserAttribute(dataAdmin);
+
         attributeList.push(attributeEmail)
         attributeList.push(attributeTomoID)
+        attributeList.push(attributeAdmin)
 
-        userPool.signUp(tomo_id, password, attributeList, null,
+        userPool.signUp(user.tomo_id, user.password, attributeList, null,
             function signUpCallback(err, result) {
                 if (!err) {
                     onSuccess(result);
@@ -186,6 +209,12 @@ var StatsAnalytics = window.StatsAnalytics || {};
 
     $(function onDocReady() {
         $('#signinForm').submit(handleSignin);
+        console.log("Admin status during onDocReady", StatsAnalytics.admin)
+        if(StatsAnalytics.admin !== 'true'){
+            $('#registerUser').hide()
+            $('#adminUser').hide();
+        }
+      
         $('#registrationForm').submit(handleRegister);
         $('#verifyForm').submit(handleVerify);
         $('#passwordResetForm').submit(handlePasswordReset);
@@ -222,10 +251,13 @@ var StatsAnalytics = window.StatsAnalytics || {};
     }
 
     function handleRegister(event) {
-        var email = $('#emailInputRegister').val();
-        var tomo_id = $('#tomoIDInputRegister').val();
-        var password = $('#passwordInputRegister').val();
-        var password2 = $('#password2InputRegister').val();
+        let user = {}
+        user.email = $('#emailInputRegister').val();
+        user.tomo_id = $('#tomoIDInputRegister').val();
+        user.password = $('#passwordInputRegister').val();
+        password2 = $('#password2InputRegister').val();
+        console.log("Checking user admin status", StatsAnalytics.admin)
+        user.admin = StatsAnalytics.admin ? $('#password2InputRegister').val() : 'false'
 
         var onSuccess = function registerSuccess(result) {
             var cognitoUser = result.user;
@@ -242,8 +274,8 @@ var StatsAnalytics = window.StatsAnalytics || {};
         };
         event.preventDefault();
 
-        if (password === password2) {
-            register(email, tomo_id, password, onSuccess, onFailure);
+        if (user.password === password2) {
+            register(user, onSuccess, onFailure);
         } else {
             alert('Passwords do not match');
         }

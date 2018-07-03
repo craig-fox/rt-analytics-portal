@@ -52,13 +52,18 @@
                           </div>
                           <div class="form-group">
                             <label for="tomoIDInputRegister">Tomo ID</label>
-                            <input type="text" class="form-control" id="tomoIDInputRegister" placeholder="Tomo ID" pattern=".*" required>
+                            <input type="text" class="form-control" id="tomoIDInputRegister" placeholder="Tomo ID" pattern="\d+" required>
                           </div>
                           <div class="form-group">
                              <label for="emailInputRegister">Password</label>
                              <input type="password" class="form-control" id="passwordInputRegister" placeholder="Password" pattern=".*" required>
                              <input type="password" class="form-control" id="password2InputRegister" placeholder="Confirm Password" pattern=".*" required>
                           </div>
+                          <div class="form-group">
+                            <div class="checkbox" id="adminUser">
+                              <label><input type="checkbox" value="">User Is Administrator</label>
+                            </div>
+                          </div> 
                           <div class="form-group">
                             <button type="submit" class="btn btn-primary" id="logout-register">Submit</button>
                           </div> 
