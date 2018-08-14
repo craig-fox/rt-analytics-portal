@@ -41,8 +41,8 @@ let my_tomo_id = -1;
   
   let poiStats = []
   let tableFilled = false
-  const monthyear = moment().set({'year':2018, 'month': 4}).format('YYYYMM')
- // const monthyear = moment().subtract(1, 'months').format('YYYYMM')
+ // const monthyear = moment().set({'year':2018, 'month': 4}).format('YYYYMM')
+  const monthyear = moment().subtract(1, 'months').format('YYYYMM')
   console.log("Month Year is", monthyear)
  
   $(function() {
@@ -163,77 +163,40 @@ let my_tomo_id = -1;
     return results
   }
 
-  function isValidURL(url, historyDate){
-   // let isValid = false
-    let historyTableDateFormat = historyDate.format('YYYY-MM')
-    let urlDateFormat = historyDate.format('YYYYMM')
-    const dataURL = getPath(urlDateFormat) + StatsAnalytics.info.report + '_' + my_tomo_id + '_' + urlDateFormat + '.csv'
-  //  const dataFileName = /POI.+\.csv/.match(dataURL)
-    const dataFileName = dataURL.match(/POI.+\.csv/)[0]
-    console.log("Data file name", dataFileName)
-    const pdfURL = dataURL.replace("csv", "pdf")
-    const pdfFileName = dataFileName.replace("csv", "pdf")
-   // console.log("Awaiting the isValidURL for", url)
-
-    $.ajax({
-      url: url,
-      type: "get",
-      success: function(data){
-        console.log(url, "is a valid url")
-       // isValid = true
-        const newRow = "<tr><td>" + historyTableDateFormat + "</td><td><a href=\"" + pdfURL + "\">" + pdfFileName + "</a></td>"
-          + "<td><a href=\"" + dataURL + "\">" + dataFileName + "</a></td></tr>"
-        console.log("New Row", newRow)
-        $("#history > tbody").append(newRow)
-
-       /* return new Promise(
-            function (resolve, reject) {
-                resolve({isValid: isValid})
-            }
-        ); */
-      },
-      error: function(err){
-        console.log(url, "is not a valid url")
-        console.log("Error", err)
-        tableFilled = true
-      //  isValid = false;
-      /*  return new Promise(
-            function (resolve, reject) {
-                resolve({isValid: isValid})
-            }
-        ); */
-      }
-    })
-
-
- //   return isValid
-  }
+  let pdfURLValid = false
+  let dataURLValid = false
 
   async function fillHistoryTable(){
-    /**
-       Start from current month, go back until an invalid url occurs
-    **/
- //   let invalidMonth = false
-    StatsAnalytics.info.report = 'POI_statistics'
-
-   // let historyDate = moment().set({'year':2018, 'month': 3})
     let historyDate = moment().subtract(1, 'months')
     let historyDateFormat = historyDate.format('YYYYMM')
-    let limit = 0;
-
-    fillTable:
+    const earliest = '201706' //One month before final row date
+    let historyTableDateFormat = historyDate.format('YYYY-MM')
+ 
     while(!tableFilled){
-          const dataURL = getPath(historyDateFormat) + StatsAnalytics.info.report + '_' + my_tomo_id + '_' + historyDateFormat + '.csv'
-         // const pdfURL = dataURL.replace("csv", "pdf")
-        //  console.log("The data url", dataURL)
-          const validURL = await isValidURL(dataURL, historyDate)
-          console.log("Is Valid:", validURL)
-          historyDate = historyDate.subtract(1, 'month')
-          historyDateFormat = historyDate.format('YYYYMM')
-          limit++
-          if(limit === 10){
-            break;
-          }     
+      const pdfURL = getPath(historyDateFormat) + StatsAnalytics.info.report + '_' + my_tomo_id + '_' + historyDateFormat + '.pdf'
+      const dataURL = getPath(historyDateFormat) + StatsAnalytics.info.report + '_' + my_tomo_id + '_' + historyDateFormat + '.csv'
+      const pdfFileName = pdfURL.match(/POI.+\.pdf/)[0]
+      const dataFileName = dataURL.match(/POI.+\.csv/)[0]
+
+      const pdfResult = await axios.head(pdfURL)
+      const dataResult = await axios.head(dataURL)
+      const isPdfValid = pdfResult.statusText === 'OK'
+      const isDataValid = dataResult.statusText === 'OK'
+
+      const pdfName = isPdfValid ? pdfFileName : "PDF not present for this month"
+      const dataName = isDataValid ? dataFileName : "CSV not present for this month"
+
+      const newRow = "<tr><td>" + historyTableDateFormat + "</td><td><a href=\"" + pdfURL + "\">" + pdfName + "</a></td>"
+        + "<td><a href=\"" + dataURL + "\">" + dataName + "</a></td></tr>"
+      console.log("New Row", newRow)
+      $("#history > tbody").append(newRow)
+      historyDate = historyDate.subtract(1, 'month')
+      historyDateFormat = historyDate.format('YYYYMM')
+      if(historyDateFormat === earliest){
+        tableFilled = true;
+      } else {
+        historyTableDateFormat = historyDate.format('YYYY-MM')
+      }    
     }
 
   }
