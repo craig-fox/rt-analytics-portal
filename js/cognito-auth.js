@@ -55,7 +55,13 @@ let StatsAnalytics = window.StatsAnalytics || {};
                         } else {
                             StatsAnalytics.admin = 'false'
                         }
-                        console.log("This user is an admin", StatsAnalytics.admin)
+                        if(groups !== undefined && groups.indexOf("tableau") >= 0){
+                            StatsAnalytics.tableau = 'true'
+                        } else {
+                            StatsAnalytics.tableau = 'false'
+                        }
+                        console.log("This user is in the admin group", StatsAnalytics.admin)
+                        console.log("This user is in the tableau group", StatsAnalytics.tableau)
                         StatsAnalytics.tomo_id = cognitoUser.username 
                         resolve(jwtToken);
                     }
