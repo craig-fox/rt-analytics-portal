@@ -50,7 +50,17 @@ let my_tomo_id = -1;
     $("#tomo_id").text(my_tomo_id)
     console.log("The tomo id is", my_tomo_id)
     let fetchUrl = poi_data_url + my_tomo_id
+    let dataset = ''
+    if(StatsAnalytics.yorke === "true"){
+      dataset = "yorke" 
+      fetchUrl = fetchUrl + "?tableau=" + dataset
+    } else if(StatsAnalytics.eyre === "true"){
+      dataset = "eyre"
+      fetchUrl = fetchUrl + "?tableau=" + dataset
+    }
+
     console.log('Fetch URL', fetchUrl)
+    StatsAnalytics.info.report = 'POI_statistics'
 
     fetch(fetchUrl)
     .then(function(response) {
@@ -68,6 +78,7 @@ let my_tomo_id = -1;
       StatsAnalytics.info.state = result.state;
       StatsAnalytics.info.region = result.region;
       StatsAnalytics.info.operator = result.operator;
+
       basePath = basePath + StatsAnalytics.info.country 
         + '/' + StatsAnalytics.info.state 
         + '/' + StatsAnalytics.info.region
@@ -77,23 +88,36 @@ let my_tomo_id = -1;
       $("#regionName").text(StatsAnalytics.info.region)
       $("#stateName").text(StatsAnalytics.info.state)
       $("#countryName").text(StatsAnalytics.info.country)
-  
-      renderPdf(monthyear)
-      const downloadPath = basePath + my_tomo_id + '/' + monthyear + '/'
-      $('#poiStatsCSV').attr('href', downloadPath + 'POI_statistics_' + my_tomo_id + monthyear + '.csv')
-      fillHistoryTable()
-   
+
+      console.log(JSON.stringify(StatsAnalytics))
+      const workbook = "Audience_Dashboard"
+      const viz = "users_in_region_by_day"
+      showRtViz(workbook, viz)
     })
     .catch(function(error) {
       console.log("Problem occurred", error)
-    });   
-   
+    });    
   });
+
+  function showRtViz(workbook, viz){
+      const containerDiv = document.getElementById("vizContainer")
+      const url = _config.tableau.vizBase + workbook +'/' + viz + '?:embed=yes'
+      console.log("Viz Url", url)
+    
+      const options = {
+        width: containerDiv.offsetWidth,
+        height: 800,
+        //  height: 500,
+        hideTabs: true,
+        hideToolbar: true,
+        'Tourism Region': StatsAnalytics.info.region
+      }
+      const tViz = new tableau.Viz(containerDiv, url, options); 
+  }
 
   function storeCsvData(result){
     const rows = result.split("\n")
     let header = rows[0].split(",")
-   // console.log("Header", header)
     let data = []
     data.push(header)
 
@@ -118,6 +142,12 @@ let my_tomo_id = -1;
     $("#thisMonth").text(thisMonth)
   }
 
+  async function requestReports(report_date){
+    StatsAnalytics.info.report = 'POI_statistics'
+    const stats = await requestCsv(StatsAnalytics.info.report, report_date)
+    renderData(stats)
+  }
+
   function renderData(stats){
     getThisMonth(stats)
   }
@@ -128,20 +158,15 @@ let my_tomo_id = -1;
 
   function renderPdf(report_date){
     const path = getPath(report_date)
-    StatsAnalytics.info.report = 'POI_statistics'
+    //StatsAnalytics.info.report = 'POI_statistics'
     const url = path + StatsAnalytics.info.report + '_' + my_tomo_id + '_' + report_date + '.pdf'
     console.log("pdf-s3 view", url)
+    console.log("Tableau group", StatsAnalytics.tableau)
     if(report_date === monthyear){
-      $("#poiStatsPDFDisplay").attr("data", url)
-      $("#poiStatsPDF").attr("href", url)
+          $("#poiStatsPDFDisplay").attr("data", url)
+          $("#poiStatsPDF").attr("href", url)
     }
     requestReports(report_date)
-  }
-
-  async function requestReports(report_date){
-    StatsAnalytics.info.report = 'POI_statistics'
-    const stats = await requestCsv(StatsAnalytics.info.report, report_date)
-    renderData(stats)
   }
 
   function requestCsv(report, report_date){
@@ -175,6 +200,7 @@ let my_tomo_id = -1;
     while(!tableFilled){
       const pdfURL = getPath(historyDateFormat) + StatsAnalytics.info.report + '_' + my_tomo_id + '_' + historyDateFormat + '.pdf'
       const dataURL = getPath(historyDateFormat) + StatsAnalytics.info.report + '_' + my_tomo_id + '_' + historyDateFormat + '.csv'
+      console.log("PDF url", pdfURL)
       const pdfFileName = pdfURL.match(/POI.+\.pdf/)[0]
       const dataFileName = dataURL.match(/POI.+\.csv/)[0]
 
@@ -188,7 +214,6 @@ let my_tomo_id = -1;
 
       const newRow = "<tr><td>" + historyTableDateFormat + "</td><td><a href=\"" + pdfURL + "\">" + pdfName + "</a></td>"
         + "<td><a href=\"" + dataURL + "\">" + dataName + "</a></td></tr>"
-      console.log("New Row", newRow)
       $("#history > tbody").append(newRow)
       historyDate = historyDate.subtract(1, 'month')
       historyDateFormat = historyDate.format('YYYYMM')

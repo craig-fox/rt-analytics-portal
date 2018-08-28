@@ -30,7 +30,6 @@ let StatsAnalytics = window.StatsAnalytics || {};
         window.location.href = 'signin.html'; 
     }; 
    
-
     if(typeof StatsAnalytics.authToken === 'undefined'){
         StatsAnalytics.authToken = new Promise(function fetchCurrentAuthToken(resolve, reject) {
             let cognitoUser = userPool.getCurrentUser();
@@ -47,7 +46,6 @@ let StatsAnalytics = window.StatsAnalytics || {};
                         console.log("Working OK")
                         const jwtToken = session.getIdToken().getJwtToken()
                         const sessionInfo = jwt_decode(jwtToken)
-                       // console.log("Group", sessionInfo['cognito:groups'])
                         const groups = sessionInfo['cognito:groups']
                         console.log("Groups", groups)
                         if(groups !== undefined && groups.indexOf("admin") >= 0){
@@ -55,13 +53,19 @@ let StatsAnalytics = window.StatsAnalytics || {};
                         } else {
                             StatsAnalytics.admin = 'false'
                         }
-                        if(groups !== undefined && groups.indexOf("tableau") >= 0){
-                            StatsAnalytics.tableau = 'true'
+                        if(groups !== undefined && groups.indexOf("yorke") >= 0){
+                            StatsAnalytics.yorke = 'true'
                         } else {
-                            StatsAnalytics.tableau = 'false'
+                            StatsAnalytics.yorke = 'false'
+                        }
+                        if(groups !== undefined && groups.indexOf("eyre") >= 0){
+                            StatsAnalytics.eyre = 'true'
+                        } else {
+                            StatsAnalytics.eyre = 'false'
                         }
                         console.log("This user is in the admin group", StatsAnalytics.admin)
-                        console.log("This user is in the tableau group", StatsAnalytics.tableau)
+                        console.log("This user is in the yorke group", StatsAnalytics.yorke)
+                        console.log("This user is in the eyre group", StatsAnalytics.eyre)
                         StatsAnalytics.tomo_id = cognitoUser.username 
                         resolve(jwtToken);
                     }
@@ -74,7 +78,6 @@ let StatsAnalytics = window.StatsAnalytics || {};
         console.log("Auth token exists")
     }
     
-  
     /*
      * Cognito User Pool functions
      */
@@ -103,6 +106,8 @@ let StatsAnalytics = window.StatsAnalytics || {};
         attributeList.push(attributeTomoID)
         attributeList.push(attributeAdmin)
 
+        console.log("Attributes", JSON.stringify(attributeList))
+
         userPool.signUp(user.tomo_id, user.password, attributeList, null,
             function signUpCallback(err, result) {
                 if (!err) {
@@ -121,11 +126,14 @@ let StatsAnalytics = window.StatsAnalytics || {};
         });
         
         const cognitoUser = createCognitoUser(tomo_id);
-        //console.log(JSON.stringify(authenticationDetails))
         console.log("User Details", JSON.stringify(cognitoUser))
         cognitoUser.authenticateUser(authenticationDetails, {
             onSuccess: onSuccess,
-            onFailure: onFailure
+            onFailure: onFailure,
+            newPasswordRequired: function(userAttributes, requiredAttributes){
+                console.log("Verifying new password")
+                resetPassword(tomo_id)
+            }
         });
     }
 
@@ -191,9 +199,7 @@ let StatsAnalytics = window.StatsAnalytics || {};
                     console.log("Cancelled it")
                     window.location.href = 'index.html';
 
-                }
-
-                
+                }  
             }
         })          
     }
@@ -271,7 +277,7 @@ let StatsAnalytics = window.StatsAnalytics || {};
             console.log('The User ' + JSON.stringify(cognitoUser));
             var confirmation = ('Registration successful. Please check your email inbox or spam folder for your verification code.');
             if (confirmation) {
-                window.location.href = 'verify.html';
+                window.location.href = 'signin.html';
             }
         };
         var onFailure = function registerFailure(err) {
@@ -288,7 +294,6 @@ let StatsAnalytics = window.StatsAnalytics || {};
     }
 
     function handleVerify(event) {
-       // var email = $('#emailInputVerify').val();
         const tomo_id = $('#tomoIDInputVerify').val();
         const code = $('#codeInputVerify').val();
         event.preventDefault();
