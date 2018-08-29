@@ -1,5 +1,5 @@
 node_modules
-js/config.js
+assets/js/config.js
 index-ice.html
 test.html
 *.old
