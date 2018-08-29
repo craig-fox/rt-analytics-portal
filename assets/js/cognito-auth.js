@@ -1,6 +1,6 @@
-/*global StatsAnalytics _config AmazonCognitoIdentity AWSCognito*/
+/*global GeoAnalytics _config AmazonCognitoIdentity AWSCognito*/
 
-let StatsAnalytics = window.StatsAnalytics || {};
+let GeoAnalytics = window.GeoAnalytics || {};
 
 (function scopeWrapper($) {
     const signinUrl = 'signin.html';
@@ -25,13 +25,13 @@ let StatsAnalytics = window.StatsAnalytics || {};
         AWSCognito.config.region = _config.cognito.region;
     } 
 
-    StatsAnalytics.signOut = function signOut() {
+    GeoAnalytics.signOut = function signOut() {
         userPool.getCurrentUser().signOut();
         window.location.href = 'signin.html'; 
     }; 
    
-    if(typeof StatsAnalytics.authToken === 'undefined'){
-        StatsAnalytics.authToken = new Promise(function fetchCurrentAuthToken(resolve, reject) {
+    if(typeof GeoAnalytics.authToken === 'undefined'){
+        GeoAnalytics.authToken = new Promise(function fetchCurrentAuthToken(resolve, reject) {
             let cognitoUser = userPool.getCurrentUser();
             console.log("The cognito user", cognitoUser)
             if (cognitoUser) {
@@ -49,24 +49,24 @@ let StatsAnalytics = window.StatsAnalytics || {};
                         const groups = sessionInfo['cognito:groups']
                         console.log("Groups", groups)
                         if(groups !== undefined && groups.indexOf("admin") >= 0){
-                            StatsAnalytics.admin = 'true'
+                            GeoAnalytics.admin = 'true'
                         } else {
-                            StatsAnalytics.admin = 'false'
+                            GeoAnalytics.admin = 'false'
                         }
                         if(groups !== undefined && groups.indexOf("yorke") >= 0){
-                            StatsAnalytics.yorke = 'true'
+                            GeoAnalytics.yorke = 'true'
                         } else {
-                            StatsAnalytics.yorke = 'false'
+                            GeoAnalytics.yorke = 'false'
                         }
                         if(groups !== undefined && groups.indexOf("eyre") >= 0){
-                            StatsAnalytics.eyre = 'true'
+                            GeoAnalytics.eyre = 'true'
                         } else {
-                            StatsAnalytics.eyre = 'false'
+                            GeoAnalytics.eyre = 'false'
                         }
-                        console.log("This user is in the admin group", StatsAnalytics.admin)
-                        console.log("This user is in the yorke group", StatsAnalytics.yorke)
-                        console.log("This user is in the eyre group", StatsAnalytics.eyre)
-                        StatsAnalytics.tomo_id = cognitoUser.username 
+                        console.log("This user is in the admin group", GeoAnalytics.admin)
+                        console.log("This user is in the yorke group", GeoAnalytics.yorke)
+                        console.log("This user is in the eyre group", GeoAnalytics.eyre)
+                        GeoAnalytics.tomo_id = cognitoUser.username 
                         resolve(jwtToken);
                     }
                 });
@@ -221,8 +221,8 @@ let StatsAnalytics = window.StatsAnalytics || {};
 
     $(function onDocReady() {
         $('#signinForm').submit(handleSignin);
-        console.log("Admin status during onDocReady", StatsAnalytics.admin)
-        if(StatsAnalytics.admin !== 'true'){
+        console.log("Admin status during onDocReady", GeoAnalytics.admin)
+        if(GeoAnalytics.admin !== 'true'){
             $('#registerUser').hide()
             $('#adminUser').hide();
         }
@@ -268,8 +268,8 @@ let StatsAnalytics = window.StatsAnalytics || {};
         user.tomo_id = $('#tomoIDInputRegister').val();
         user.password = $('#passwordInputRegister').val();
         password2 = $('#password2InputRegister').val();
-        console.log("Checking user admin status", StatsAnalytics.admin)
-        user.admin = StatsAnalytics.admin ? $('#password2InputRegister').val() : 'false'
+        console.log("Checking user admin status", GeoAnalytics.admin)
+        user.admin = GeoAnalytics.admin ? $('#password2InputRegister').val() : 'false'
 
         var onSuccess = function registerSuccess(result) {
             var cognitoUser = result.user;

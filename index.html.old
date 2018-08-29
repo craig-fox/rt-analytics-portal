@@ -1,0 +1,89 @@
+<!doctype html>
+<html class="no-js" lang="">
+<head>
+  <meta charset="utf-8">
+  <meta name="description" content="">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Customer Portal</title>
+  <link rel="stylesheet" href="css/styles.css">
+  <link rel="stylesheet" href="css/bootstrap.min.css">
+</head>
+<body>
+  <div class="container-fluid portal-view">
+      <div class="row">
+          <div class="col-sm-7 col-md-7 col-lg-7">
+              <header class="site-header">
+                  <h1 class="title">Customer Portal</h1>
+              </header>
+              <div class="infoContainer" >
+                 <span id="reportName"></span>Report for <span id="operatorName"></span>, <span id="regionName"></span>, 
+                 <span id="stateName"></span>, <span id="countryName"></span> 
+                 <br/>
+                 <p><span id="thisMonth"></span></p>
+              </div>  
+          </div>
+          <div class="col-sm-3 col-md-3 col-lg-3">
+              <div class="infoContainer aside">
+                 <p><small>Logged in as tomo id&nbsp;<span id="tomo_id"></span></small></p><br/>
+                 <a id="registerUser" href="register.html"><small>Register new user</small></a><br />
+                 <button type="button" class="btn btn-primary" id="logout-app">Log out</button>
+
+              </div>  
+          </div>
+      </div>
+      <div class="row">
+          <div class="col-sm-10 col-md-10 col-lg-10">
+              <div id="totalPoiStatsContainer" class="container-fluid">         
+                <br/>
+                <ul class="nav nav-tabs nav-justified">
+                  <li class="nav-item">
+                    <a class="nav-link active" data-toggle="tab" href="#current" role="tab">
+                      Current Month
+                    </a>
+                    <li class="nav-item">
+                    <a class="nav-link" data-toggle="tab" href="#history" role="tab">
+                      History
+                    </a>
+                  </li>
+                </ul>
+
+                <div class="tab-content card">
+                <div class="tab-pane fade in show active" id="current" role="tabpanel">
+                     <div id="vizContainer"></div>
+                </div>
+                  <div class="tab-pane fade" id="history" role="tabpanel">
+                    <table id="history" class="table">
+                      <thead>
+                        <tr>
+                          <th scope="col">Month & Year</th>
+                          <th scope="col">PDF</th>
+                          <th scope="col">CSV</th>
+                        </tr>  
+                      </thead>
+                      <tbody>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>    
+          </div>
+          <div class="col-sm-2 col-md-2 col-lg-2">
+             <!--div id="downloadCSV">
+                <a id="poiStatsCSV" href="" style="display:block;"><small>Download CSV</small></a>
+             </div-->    
+          </div>
+      </div>
+  </div>
+
+  <script src="js/config.js"></script>
+  <script src="js/vendor/jquery-3.3.1.min.js"></script>
+  <script src="js/vendor/bootstrap.min.js"></script>
+  <script src="js/vendor/amazon-cognito-identity.min.js"></script>
+  <script src="js/vendor/moment.min.js"></script>
+  <script src="js/vendor/jwt-decode.min.js"></script>
+  <script src="js/cognito-auth.js"></script>
+  <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+  <script src="https://dub01.online.tableau.com/javascripts/api/tableau-2.min.js"></script>
+  <script src="js/app.js"></script>                    
+</body>
+</html>

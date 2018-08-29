@@ -3,7 +3,7 @@
 
 <head>
   <meta charset="UTF-8">
-  <title>Infrastructure Dashboard</title>
+  <title>Behaviour Dashboard</title>
 
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
   <link rel='stylesheet' href='assets/css/semantic.min.css'>
@@ -26,9 +26,9 @@
         </div>
 
         <div class="global-nav">
-          <a href="index.html" class="item active">Infrastructure</a>
+          <a href="index.html" class="item">Infrastructure</a>
           <a href="audience.html" class="item">Audience</a>
-          <a href="behaviour.html" class="item">Behaviour</a>
+          <a href="behaviour.html" class="item active">Behaviour</a>
           <a href="conversion.html" class="item">Conversion</a>
           <a href="#" class="item"> <i class="material-icons">menu</i>
             <nav id="circle-nav-wrapper" class="circle-nav-wrapper">
@@ -50,28 +50,24 @@
     </div>
 
     <div class="content" style="overflow-x: auto;">
-
         <div class="carto-container">
-          <iframe id="dashboard_poi_master" height="600" width="1020"></iframe>
 
-<!--Carto Map Embedded Here - 1020x600px wide <br/>
-Reference:  Carto / Dashboard_POI_Master -->
+Carto Map Embedded Here - 1020x600px <br/>
+Reference:  Carto / Dashboard_EntriesExits
 
           <div class="loader">
             <div class="dot"></div>
-              <div class="dot"></div>
-              <div class="dot"></div>
-              <div class="dot"></div>
-              <div class="dot"></div>
+            <div class="dot"></div>
+            <div class="dot"></div>
+            <div class="dot"></div>
+            <div class="dot"></div>
           </div>
-
         </div>
 
-        <div id="infrastructure_dash1" class="tableau-container">
-        
+        <div class="tableau-container">
 
-<!--Tableau Dashboard Embedded Here - 1020x500px <br/>
-Reference:  Tableau / Infrastructure_Dashboard / infrastructure_dash1-->
+Tableau Dashboard Embedded Here - 1020x500px <br/>
+Reference:  Tableau / behaviour_Dashboard / behaviour_dash1
 
             <div class="loader">
               <div class="dot"></div>
@@ -84,9 +80,8 @@ Reference:  Tableau / Infrastructure_Dashboard / infrastructure_dash1-->
 
         <div class="carto-container">
 
-<!--Carto Map Embedded Here - 1020x600px wide<br/>
-Reference:  Carto / Dashboard_Events_Utility-->
-            <iframe id="dashboard_events_utility" height="600" width="1020"></iframe>
+Carto Map Embedded Here - 1020x600px <br/>
+Reference:  Carto / Dashboard_OvernightClusters
 
             <div class="loader">
               <div class="dot"></div>
@@ -97,10 +92,25 @@ Reference:  Carto / Dashboard_Events_Utility-->
             </div>
         </div>
 
-        <div id="infrastructure_dash2" class="tableau-container">
+        <div class="tableau-container">
 
-<!--Tableau Dashboard Embedded Here - 1020x500px <br/>
-Reference:  Tableau / Infrastructure_Dashboard / infrastructure_dash2 -->
+Tableau Dashboard Embedded Here - 1020x500px <br/>
+Reference:  Tableau / behaviour_Dashboard / behaviour_dash2
+
+            <div class="loader">
+              <div class="dot"></div>
+              <div class="dot"></div>
+              <div class="dot"></div>
+              <div class="dot"></div>
+              <div class="dot"></div>
+            </div>
+        </div>
+
+        <div class="carto-container">
+
+Carto Map Embedded Here - 1020x600px <br/>
+Reference:  Carto / Dashboard_SearchHeatMap
+
             <div class="loader">
               <div class="dot"></div>
               <div class="dot"></div>
@@ -124,16 +134,10 @@ Reference:  Tableau / Infrastructure_Dashboard / infrastructure_dash2 -->
   </div>
 
 
-  <script src="assets/js/config.js"></script>
+
   <script src="assets/js/jquery-3.1.1.min.js"></script>
   <script src='assets/js/semantic.min.js'></script>
   <script src='assets/js/quill.min.js'></script>
-  <script src="assets/js/amazon-cognito-identity.min.js"></script>
-  <script src="js/vendor/jwt-decode.min.js"></script>
-  <!--script src='assets/js/cognito-auth.js'></script-->
-  <script src="https://dub01.online.tableau.com/javascripts/api/tableau-2.min.js"></script>
-  <script src='assets/js/viz.js'></script>
-  <script src='assets/js/infrastructure-views.js'></script>
   <script src='assets/js/main.js'></script>
 
 
